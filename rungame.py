@@ -20,6 +20,7 @@ ASTEROIDRATE = 40  # higher is slower spawn rate of new astroids
 BULLETSIZE = 4
 FIRERATE = 7  # lower is faster
 BULLETLIFE = 90  # how long before a bullet dies out. Measured in frames
+POWERUPLIFE = 150  # how long before a power up disappears. Measured in frames
 BULLETSPEED = 12
 FONT = 'comicsansms'
 

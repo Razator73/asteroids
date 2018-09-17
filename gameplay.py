@@ -147,6 +147,7 @@ class Player:
         self.velocity = list(v)
         self.direction = direction
         self.speed = 0
+        # TODO: Determine lifetime of the powerup
         self.powerups = [False,  # Spreadshot
                          False,  # Rapid Fire
                          False,  # Speed up
@@ -219,18 +220,29 @@ class Player:
             for sub in sub_players:
                 sub.draw(surf)
 
+            # TODO: draw active powerups
+
             self.sub_players = sub_players
 
 
 class Powerup:
     def __init__(self, location, type_code):
         self.location = location
-        self.life = 150
+        self.outline = pygame.Rect(location[0], location[1], 30, 30)
+        self.life = 0
+        self.shape = ((location[0], location[1]),
+                      (location[0] + 30, location[1]),
+                      (location[0] + 30, location[1] + 30),
+                      (location[0], location[1] + 30))
         self.type_code = type_code
         self.label = labels[type_code]
 
-    def collision(self):
-        pass
+    def draw(self, surf):
+        pygame.draw.rect(surf, rungame.WHITE, self.outline, 2)
+        rungame.draw_text(surf, self.label, 16, self.location[0] + 5, self.location[1] + 5)
+        # TODO: fade in and out near end of life
+
+        # TODO: add screen wrapping logic
     
     
 def polygon_collide(shape1, shape2):
@@ -340,7 +352,7 @@ def playgame(game_surf, clock):
     bulletCounter = rungame.FIRERATE  # makes sure bullets don't fire too quickly, instant start could be abused
     bullets = []
     ship = Player([rungame.WINDOWWIDTH / 2, rungame.WINDOWHEIGHT / 2])
-    # powerups = []
+    powerups = []
     scorecounter = 0
 
     asteroids = []
@@ -398,13 +410,16 @@ def playgame(game_surf, clock):
             asteroids.append(add_asteroid())
             asteroidcounter = 0
 
-        # move player and objs then check for collisions
+        # move player and objs and increase life time
         ship.move()
         for obj in asteroids + bullets:
             obj.move()
-        for bullet in bullets:
-            bullet.life += 1
+        for obj in bullets + powerups:
+            obj.life += 1
+        # remove objects above their life time
         bullets = [b for b in bullets if b.life <= rungame.BULLETLIFE]
+        powerups = [p for p in powerups if p.life <= rungame.POWERUPLIFE]
+        # check for bullet to asteroid collisions
         for b in bullets[:]:
             remove_b = False
             for a in asteroids[:]:
@@ -422,36 +437,42 @@ def playgame(game_surf, clock):
                 if remove_a:
                     asteroids.remove(a)
                     score += 6 - round(a.radius / 10)
+                    if random.uniform(0, 1) >= .95:
+                        powerups.append(Powerup(a.center, random.randint(0, 4)))
                     if a.radius > rungame.ASTEROIDMINSIZE * 2:
                         asteroids += add_asteroid(a)
             if remove_b:
                 bullets.remove(b)
 
+        # draw all objects onto the surface
         game_surf.fill(rungame.BGCOLOR)
-        ship.draw(game_surf)
-        for obj in asteroids + bullets:
+        ship.draw(game_surf)  # TODO: check for force field
+        for obj in asteroids + bullets + powerups:
             obj.draw(game_surf)
-        # for powerup in powerups[:]:
-        #     powerup.life -= 1
-        #     if powerup.life < 0:
-        #         powerups.remove(powerup)
-        #     else:
-        #         powerup.draw()
 
+        # add 1 point for each second survived
         scorecounter += 1
         if scorecounter >= 30:
             score += 1
             scorecounter = 0
         rungame.draw_text(game_surf, 'Score: {}'.format(score), 16, 5, 5)
 
+        # show the new screen
         pygame.display.update()
 
+        # check for player asteroid collisions
+        # TODO: use force field for collision if active
         for a in asteroids:
             if math.hypot(ship.center[0] - a.center[0],
                           ship.center[1] - a.center[1]) < rungame.PLAYERSIZE + a.radius * 1.7:
                 if polygon_collide(a.shape(), ship.shape()):
                     gameover(game_surf)
                     return score
+        # player collision with a power up
+        for p in powerups[:]:
+            if polygon_collide(p.shape, ship.shape()):
+                powerups.remove(p)
+                ship.powerups[p.type_code] = True
 
         clock.tick(rungame.FPS)
 
