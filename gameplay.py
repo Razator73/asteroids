@@ -1,6 +1,6 @@
 # an Asteroids clone
 # By Ryan Scott
-# ver 1.3
+# ver 1.4
 import rungame
 import pygame
 import random
@@ -148,11 +148,11 @@ class Player:
         self.direction = direction
         self.speed = 0
         # TODO: Determine lifetime of the powerup
-        self.powerups = [False,  # Spreadshot
-                         False,  # Rapid Fire
-                         False,  # Speed up
-                         False,  # Shield
-                         False]  # Piercing Shot
+        self.powerups = [False,  # Spreadshot, time limit
+                         False,  # Rapid Fire, time limit
+                         False,  # Speed up, time limit
+                         False,  # Shield, till hit
+                         False]  # Piercing Shot, time limit
         self.sub_players = []
         self.sub = sub
 
@@ -221,6 +221,7 @@ class Player:
                 sub.draw(surf)
 
             # TODO: draw active powerups
+            # TODO: draw force field
 
             self.sub_players = sub_players
 
@@ -373,6 +374,7 @@ def playgame(game_surf, clock):
             # handle events that aren't going to exit the game
             if event.type == pl.KEYDOWN:
                 # handle directional keys
+                # TODO: Check for speed up powerup
                 if event.key in (pl.K_DOWN, pl.K_s):
                     acceleration = -rungame.ACCELERATION / 2  # forward thrusters are stronger than reverse thrusters
                 elif event.key in (pl.K_UP, pl.K_w):
@@ -400,8 +402,9 @@ def playgame(game_surf, clock):
 
         # handle the firing of the ship's weapon
         bulletCounter += 1
-        if openFire and bulletCounter >= rungame.FIRERATE:
+        if openFire and bulletCounter >= rungame.FIRERATE:  # TODO: check for rapid fire powerup
             bullets.append(Bullet(ship.shape(), ship.direction, ship.velocity))
+            # TODO: check for spread shot powerup
             bulletCounter = 0
 
         # add new asteroids every so often
@@ -441,7 +444,7 @@ def playgame(game_surf, clock):
                         powerups.append(Powerup(a.center, random.randint(0, 4)))
                     if a.radius > rungame.ASTEROIDMINSIZE * 2:
                         asteroids += add_asteroid(a)
-            if remove_b:
+            if remove_b:  # TODO: check for piercing shot powerup
                 bullets.remove(b)
 
         # draw all objects onto the surface

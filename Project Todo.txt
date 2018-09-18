@@ -49,3 +49,4 @@ Files
     - rungame.py - where everything is run
     - ai.py - random play in menu backgrounds (lowest priority)
     - highscores.csv - save the high scores (use shelve file instead?)
+    - keybindings.csv - save a custom set of keybindings

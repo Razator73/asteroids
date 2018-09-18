@@ -34,7 +34,7 @@ def main_menu(surf, clock):
         box_height = 28
         cursor = pygame.Rect(rungame.WINDOWWIDTH / 3 - 5, title_height + 74 + 30 * choice, 180, box_height)
         pygame.draw.rect(surf, rungame.WHITE, cursor, 2)
-        rungame.draw_text(surf, 'version 1.3', 15, 5, rungame.WINDOWHEIGHT - 22)
+        rungame.draw_text(surf, 'version 1.4', 15, 5, rungame.WINDOWHEIGHT - 22)
         pygame.display.update()
 
         rungame.check_for_quit()
