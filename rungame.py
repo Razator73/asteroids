@@ -20,9 +20,10 @@ ASTEROIDRATE = 40  # higher is slower spawn rate of new astroids
 BULLETSIZE = 4
 FIRERATE = 7  # lower is faster
 BULLETLIFE = 90  # how long before a bullet dies out. Measured in frames
-POWERUPLIFE = 150  # how long before a power up disappears. Measured in frames
+POWERUPLIFE = 210  # how long before a power up disappears. Measured in frames
 BULLETSPEED = 12
 FONT = 'comicsansms'
+SPREADANGLE = 15
 
 # stuck with black and white for now. I'll probably add some more color later
 WHITE = (255, 255, 255)
@@ -53,10 +54,10 @@ def wait_for_player():
                 pygame.event.post(event)
 
 
-def draw_text(surf, text, fontsize, x, y, font=FONT):
+def draw_text(surf, text, fontsize, x, y, text_color=WHITE, font=FONT):
     """ draws a text for the given font size at the given x and y """
     font = pygame.font.SysFont(font, fontsize)
-    textobj = font.render(text, 1, WHITE)
+    textobj = font.render(text, 1, text_color)
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surf.blit(textobj, textrect)

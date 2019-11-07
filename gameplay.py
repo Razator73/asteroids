@@ -9,7 +9,11 @@ import math
 import copy
 
 
-labels = ['SS', 'RF', 'SU', 'SH', 'PS']
+powerup_dict = {'spread-shot': {'label': 'SS', 'life': 300},
+                'rapid-fire': {'label': 'RF', 'life': 300},
+                'speed-up': {'label': 'SU', 'life': 300},
+                'shield': {'label': 'SH', 'life': 30000},
+                'piercing-shot': {'label': 'PS', 'life': 300}}
 
 
 class Bullet:
@@ -147,12 +151,11 @@ class Player:
         self.velocity = list(v)
         self.direction = direction
         self.speed = 0
-        # TODO: Determine lifetime of the powerup
-        self.powerups = [False,  # Spreadshot, time limit
-                         False,  # Rapid Fire, time limit
-                         False,  # Speed up, time limit
-                         False,  # Shield, till hit
-                         False]  # Piercing Shot, time limit
+        self.powerups = {'spread-shot':   {'active': False, 'life': 0},  # Spreadshot, time limit
+                         'rapid-fire':    {'active': False, 'life': 0},  # Rapid Fire, time limit
+                         'speed-up':      {'active': False, 'life': 0},  # Speed up, time limit
+                         'shield':        {'active': False, 'life': 0},  # Shield, till hit
+                         'piercing-shot': {'active': False, 'life': 0}}  # Piercing Shot, time limit
         self.sub_players = []
         self.sub = sub
 
@@ -195,6 +198,13 @@ class Player:
             self.center[0] %= rungame.WINDOWWIDTH
         if self.center[1] > rungame.WINDOWHEIGHT or self.center[1] < 0:
             self.center[1] %= rungame.WINDOWHEIGHT
+
+        for powerup, status in self.powerups.items():
+            if status['active']:
+                if status['life'] <= powerup_dict[powerup]['life']:
+                    status['life'] += 1
+                else:
+                    status['active'] = False
             
     def draw(self, surf):
         sub_players = []
@@ -221,7 +231,9 @@ class Player:
                 sub.draw(surf)
 
             # TODO: draw active powerups
-            # TODO: draw force field
+            if self.powerups['shield']['active']:
+                pygame.draw.circle(surf, rungame.WHITE, (round(self.center[0]), round(self.center[1])),
+                                   rungame.PLAYERSIZE + 4, 2)
 
             self.sub_players = sub_players
 
@@ -236,13 +248,14 @@ class Powerup:
                       (location[0] + 30, location[1] + 30),
                       (location[0], location[1] + 30))
         self.type_code = type_code
-        self.label = labels[type_code]
+        self.label = powerup_dict[type_code]['label']
 
     def draw(self, surf):
-        pygame.draw.rect(surf, rungame.WHITE, self.outline, 2)
-        rungame.draw_text(surf, self.label, 16, self.location[0] + 5, self.location[1] + 5)
-        # TODO: fade in and out near end of life
-
+        color_fade = max(self.life - rungame.POWERUPLIFE + rungame.FPS * 2, 0)
+        powerup_color = (int(abs(255 * math.cos(4 * math.pi / (rungame.FPS * 2) * color_fade))),) * 3
+        pygame.draw.rect(surf, powerup_color, self.outline, 2)
+        rungame.draw_text(surf, self.label, 16, self.location[0] + 5, self.location[1] + 5,
+                          text_color=powerup_color)
         # TODO: add screen wrapping logic
     
     
@@ -349,7 +362,7 @@ def playgame(game_surf, clock):
     score = 0
     acceleration = 0  # can be 1 to increase 0 stays the same and -1 slow down
     rotate = 0  # similar to acceleration for values, 1 is counter-clockwise, -1 is clockwise, 0 is none
-    openFire = False  # weapon firing or not
+    open_fire = False  # weapon firing or not
     bulletCounter = rungame.FIRERATE  # makes sure bullets don't fire too quickly, instant start could be abused
     bullets = []
     ship = Player([rungame.WINDOWWIDTH / 2, rungame.WINDOWHEIGHT / 2])
@@ -357,7 +370,7 @@ def playgame(game_surf, clock):
     scorecounter = 0
 
     asteroids = []
-    for i in range(7):
+    for i in range(5):
         asteroids.append(add_asteroid())
     asteroidcounter = 0
 
@@ -374,17 +387,18 @@ def playgame(game_surf, clock):
             # handle events that aren't going to exit the game
             if event.type == pl.KEYDOWN:
                 # handle directional keys
-                # TODO: Check for speed up powerup
+                speed_up_percent = 2 if ship.powerups['speed-up']['active'] else 1
                 if event.key in (pl.K_DOWN, pl.K_s):
-                    acceleration = -rungame.ACCELERATION / 2  # forward thrusters are stronger than reverse thrusters
+                    acceleration = -rungame.ACCELERATION / 2 * speed_up_percent
+                    # forward thrusters are stronger than reverse thrusters
                 elif event.key in (pl.K_UP, pl.K_w):
-                    acceleration = rungame.ACCELERATION
+                    acceleration = rungame.ACCELERATION * speed_up_percent
                 elif event.key in (pl.K_RIGHT, pl.K_d):
-                    rotate = rungame.ROTATESPEED
+                    rotate = rungame.ROTATESPEED * speed_up_percent
                 elif event.key in (pl.K_LEFT, pl.K_a):
-                    rotate = -rungame.ROTATESPEED
+                    rotate = -rungame.ROTATESPEED * speed_up_percent
                 elif event.key == pl.K_SPACE:
-                    openFire = True
+                    open_fire = True
 
             elif event.type == pl.KEYUP:
                 if event.key == pl.K_RETURN:
@@ -394,7 +408,7 @@ def playgame(game_surf, clock):
                 elif event.key in (pl.K_RIGHT, pl.K_d, pl.K_LEFT, pl.K_a):
                     rotate = 0
                 elif event.key == pl.K_SPACE:
-                    openFire = False
+                    open_fire = False
 
         # handle the ship's speed and rotation
         ship.rotation(rotate)
@@ -402,9 +416,16 @@ def playgame(game_surf, clock):
 
         # handle the firing of the ship's weapon
         bulletCounter += 1
-        if openFire and bulletCounter >= rungame.FIRERATE:  # TODO: check for rapid fire powerup
+        add_bullet = (open_fire and
+                      (bulletCounter >= rungame.FIRERATE or
+                       (bulletCounter >= int(rungame.FIRERATE / 2) and ship.powerups['rapid-fire']['active'])))
+        if add_bullet:
             bullets.append(Bullet(ship.shape(), ship.direction, ship.velocity))
-            # TODO: check for spread shot powerup
+            if ship.powerups['spread-shot']['active']:
+                bullets.append(Bullet(ship.shape(),
+                                      ship.direction + math.radians(rungame.SPREADANGLE), ship.velocity))
+                bullets.append(Bullet(ship.shape(),
+                                      ship.direction - math.radians(rungame.SPREADANGLE), ship.velocity))
             bulletCounter = 0
 
         # add new asteroids every so often
@@ -440,16 +461,16 @@ def playgame(game_surf, clock):
                 if remove_a:
                     asteroids.remove(a)
                     score += 6 - round(a.radius / 10)
-                    if random.uniform(0, 1) >= .95:
-                        powerups.append(Powerup(a.center, random.randint(0, 4)))
+                    if random.uniform(0, 1) >= .50:  # TODO lower power up drop rate in production
+                        powerups.append(Powerup(a.center, random.choice(list(powerup_dict.keys()))))
                     if a.radius > rungame.ASTEROIDMINSIZE * 2:
                         asteroids += add_asteroid(a)
-            if remove_b:  # TODO: check for piercing shot powerup
+            if remove_b and not ship.powerups['piercing-shot']['active']:
                 bullets.remove(b)
 
         # draw all objects onto the surface
         game_surf.fill(rungame.BGCOLOR)
-        ship.draw(game_surf)  # TODO: check for force field
+        ship.draw(game_surf)
         for obj in asteroids + bullets + powerups:
             obj.draw(game_surf)
 
@@ -475,8 +496,8 @@ def playgame(game_surf, clock):
         for p in powerups[:]:
             if polygon_collide(p.shape, ship.shape()):
                 powerups.remove(p)
-                ship.powerups[p.type_code] = True
-
+                ship.powerups[p.type_code]['active'] = True
+                ship.powerups[p.type_code]['life'] = 0
         clock.tick(rungame.FPS)
 
 

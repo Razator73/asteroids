@@ -78,13 +78,13 @@ def high_scores(surf, clock, new_score=None):
                     score_text = '{}{}{}'.format(textinput.get_text(),
                                                  '.' * (50 - len(textinput.get_text()) - len(str(new_score))),
                                                  scores[i][1])
-                    rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, 'courier')
+                    rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, font='courier')
                     surf.blit(textinput.get_surface(), (rungame.WINDOWWIDTH / 6, score_height))
                 else:
                     score_text = '{}{}{}'.format(scores[i][0],
                                                  '.' * (50 - len(scores[i][0]) - len(scores[i][1])),
                                                  scores[i][1])
-                    rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, 'courier')
+                    rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, font='courier')
                 score_height += 50
             pygame.display.update()
 
@@ -105,7 +105,7 @@ def high_scores(surf, clock, new_score=None):
         score_text = '{}{}{}'.format(scores[i][0],
                                      '.' * (50 - len(scores[i][0]) - len(scores[i][1])),
                                      scores[i][1])
-        rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, 'courier')
+        rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, font='courier')
         score_height += 50
     rungame.draw_text(surf, 'Press any key to go back to the main menu', 24,
                       int(rungame.WINDOWWIDTH / 4), score_height + 75)
