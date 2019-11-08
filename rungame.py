@@ -1,8 +1,7 @@
+import sys
+
 import pygame
 import pygame.locals as pl
-import sys
-import math
-
 
 FPS = 30
 WINDOWWIDTH = 960
@@ -10,7 +9,7 @@ WINDOWHEIGHT = 540
 PLAYERSIZE = 20
 PLAYERTOPSPEED = 8
 ACCELERATION = .3
-ROTATESPEED = math.pi / 18
+ROTATESPEED = 18  # lower is faster math.pi / ROTATESPEED
 ASTEROIDMINSPEED = 2
 ASTEROIDMAXSPEED = PLAYERTOPSPEED - 1  # player should be able to out run any asteroid
 ASTEROIDMINSIZE = 20
@@ -69,6 +68,7 @@ def check_for_quit():
         pygame.event.post(event)
 
 
+# noinspection PyUnusedLocal
 def terminate(surface=None, clock=None):
     pygame.quit()
     sys.exit()

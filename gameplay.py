@@ -1,19 +1,28 @@
 # an Asteroids clone
 # By Ryan Scott
 # ver 1.4
-import rungame
-import pygame
-import random
-import pygame.locals as pl
-import math
 import copy
+import math
+import random
 
+import pygame
+import pygame.locals as pl
+
+import rungame
 
 powerup_dict = {'spread-shot': {'label': 'SS', 'life': 300},
                 'rapid-fire': {'label': 'RF', 'life': 300},
                 'speed-up': {'label': 'SU', 'life': 300},
                 'shield': {'label': 'SH', 'life': 30000},
                 'piercing-shot': {'label': 'PS', 'life': 300}}
+
+
+def wrap_center(center):
+    if center[0] > rungame.WINDOWWIDTH or center[0] < 0:
+        center[0] %= rungame.WINDOWWIDTH
+    if center[1] > rungame.WINDOWHEIGHT or center[1] < 0:
+        center[1] %= rungame.WINDOWHEIGHT
+    return center
 
 
 class Bullet:
@@ -134,10 +143,7 @@ class Asteroid:
         self.rotated += self.rotate_speed
         self.rotated %= 2 * math.pi
 
-        if self.center[0] > rungame.WINDOWWIDTH or self.center[0] < 0:
-            self.center[0] %= rungame.WINDOWWIDTH
-        if self.center[1] > rungame.WINDOWHEIGHT or self.center[1] < 0:
-            self.center[1] %= rungame.WINDOWHEIGHT
+        self.center = wrap_center(self.center)
 
     def shape(self):
         return [(round(self.radius * pt[0] * math.cos(pt[1] + self.rotated)) + self.center[0],
@@ -194,10 +200,7 @@ class Player:
         self.center[0] += self.velocity[0]
         self.center[1] += self.velocity[1]
 
-        if self.center[0] > rungame.WINDOWWIDTH or self.center[0] < 0:
-            self.center[0] %= rungame.WINDOWWIDTH
-        if self.center[1] > rungame.WINDOWHEIGHT or self.center[1] < 0:
-            self.center[1] %= rungame.WINDOWHEIGHT
+        self.center = wrap_center(self.center)
 
         for powerup, status in self.powerups.items():
             if status['active']:
@@ -397,7 +400,7 @@ def circle_polygon_collide(center, radius, polygon_shape):
 def playgame(game_surf, clock):
     score = 0
     acceleration = 0  # can be 1 to increase 0 stays the same and -1 slow down
-    rotate = 0.0  # similar to acceleration for values, 1 is counter-clockwise, -1 is clockwise, 0 is none
+    rotate = 0  # similar to acceleration for values, 1 is counter-clockwise, -1 is clockwise, 0 is none
     open_fire = False  # weapon firing or not
     bullet_counter = rungame.FIRERATE  # makes sure bullets don't fire too quickly, instant start could be abused
     bullets = []
@@ -430,9 +433,9 @@ def playgame(game_surf, clock):
                 elif event.key in (pl.K_UP, pl.K_w):
                     acceleration = rungame.ACCELERATION * speed_up_percent
                 elif event.key in (pl.K_RIGHT, pl.K_d):
-                    rotate = rungame.ROTATESPEED * speed_up_percent
+                    rotate = math.pi / rungame.ROTATESPEED * speed_up_percent
                 elif event.key in (pl.K_LEFT, pl.K_a):
-                    rotate = -1 * rungame.ROTATESPEED * speed_up_percent
+                    rotate = -1 * math.pi / rungame.ROTATESPEED * speed_up_percent
                 elif event.key == pl.K_SPACE:
                     open_fire = True
 
@@ -442,7 +445,7 @@ def playgame(game_surf, clock):
                 elif event.key in (pl.K_UP, pl.K_w, pl.K_DOWN, pl.K_s):
                     acceleration = 0
                 elif event.key in (pl.K_RIGHT, pl.K_d, pl.K_LEFT, pl.K_a):
-                    rotate = 0.0
+                    rotate = 0
                 elif event.key == pl.K_SPACE:
                     open_fire = False
 

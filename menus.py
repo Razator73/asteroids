@@ -1,12 +1,13 @@
 # Asteroids main menu
-import rungame
-import pygame
-import pygame.locals as pl
 import csv
-import pygame_textinput
-import appdirs
 import os
 
+import appdirs
+import pygame
+import pygame.locals as pl
+
+import pygame_textinput
+import rungame
 
 scores_file = os.path.join(appdirs.user_data_dir('Asteroids', 'Ryan'), 'highscores.csv')
 if not os.path.exists(scores_file):

@@ -3,9 +3,11 @@
 Copyright 2017, Silas Gyger, silasgyger@gmail.com, All rights reserved.
 """
 
+import os.path
+
 import pygame
 import pygame.locals as pl
-import os.path
+
 pygame.font.init()
 
 
