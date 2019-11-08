@@ -8,10 +8,10 @@ Polish Asteroids game (split code into multiple files)
             [DONE] - Options: Play Again, Quit
             [DONE] - High Scores should be shown (highlight if last play was new top 5)
 			[DONE] - Black out a rectangle
-    - High Scores (save them, top 5 with name) (1.3)
-        - new methods for displaying and input
-        - free typing in pygame for name input?
-		- include file in the .exe build
+    [DONE] - High Scores (save them, top 5 with name) (1.3)
+        [DONE] - new methods for displaying and input
+        [DONE] - free typing in pygame for name input?
+		[DONE] - include file in the .exe build (actually saved with appdirs to a common apps folder based on OS)
         [DONE] - score goes up every second and with shooting asteriods
     [DONE] - Split asteroids on impact (WIP,  change centers)
     [DONE] - Vary asteroid shape (polygons and not circles) (1.3)
@@ -21,11 +21,12 @@ Polish Asteroids game (split code into multiple files)
         [DONE] - create a finite number of shapes and give the asteriod on shape (moved to randomly generated)
     - Ramp up difficulty with score (leveling) (2.0)
     - Power up drops (decay over time) (start with just text) (2.0)
-        - Spread shot (3 bullets +/- 15 degrees) --SS--
-        - Rapid fire (2x speed rate and bullet speed) --RF--
-        - Speed up (include rotational speed and acceleration) --SU--
+        [DONE] - Spread shot (3 bullets +/- 15 degrees) --SS--
+        [DONE] - Rapid fire (2x speed rate and bullet speed) --RF--
+        [DONE] - Speed up (include rotational speed and acceleration) --SU--
         - Invulnerability (shield good for one hit) --SH--
-        - Piercing shot (bullets don't disappear on contact) --PS--
+        [DONE] - Piercing shot (bullets don't disappear on contact) --PS--
+        - Draw active power ups
     [DONE] - Run in .exe file
     [DONE] - Bullets take into account current ship velocity not just direciton
     - Figure out screen wrapping issues (bug) (1.3)

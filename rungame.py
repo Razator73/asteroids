@@ -89,11 +89,14 @@ if __name__ == '__main__':
     fps_clock = pygame.time.Clock()
     display_surf = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Asteroids')
+    # TODO: options dict with functions
 
     while True:
+        # TODO pass options from here
         choice = menus.main_menu(display_surf, fps_clock)
         if choice == 0:
             score = gameplay.playgame(display_surf, fps_clock)
+            # TODO move score into gameplay loop
             menus.high_scores(display_surf, fps_clock, score)
         elif choice == 1:
             menus.high_scores(display_surf, fps_clock)

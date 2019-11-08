@@ -42,9 +42,9 @@ def main_menu(surf, clock):
         for event in pygame.event.get():
             if event.type == pl.KEYUP:
                 if event.key in (pl.K_a, pl.K_UP):
-                    choice = (choice - 1) % 3
+                    choice = (choice - 1) % len(options)
                 elif event.key in (pl.K_s, pl.K_DOWN):
-                    choice = (choice + 1) % 3
+                    choice = (choice + 1) % len(options)
                 elif event.key == pl.K_RETURN:
                     return choice
 
