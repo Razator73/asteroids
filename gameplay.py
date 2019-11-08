@@ -467,9 +467,9 @@ def playgame(game_surf, clock):
                                       ship.direction - math.radians(rungame.SPREADANGLE), ship.velocity))
             bullet_counter = 0
 
-        # add new asteroids every so often
+        # add new asteroids every so often rate based on score and gets faster as score goes up
         asteroidcounter += 1
-        if asteroidcounter >= (rungame.ASTEROIDRATE - int(score / 50)):  # TODO: make this a level system
+        if asteroidcounter >= (rungame.ASTEROIDRATE - int(score / 50)):
             asteroids.append(add_asteroid())
             asteroidcounter = 0
 
