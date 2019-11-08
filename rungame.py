@@ -2,7 +2,6 @@ import pygame
 import pygame.locals as pl
 import sys
 import math
-import os
 
 
 FPS = 30
@@ -70,15 +69,9 @@ def check_for_quit():
         pygame.event.post(event)
 
 
-def terminate():
+def terminate(surface=None, clock=None):
     pygame.quit()
     sys.exit()
-
-
-def resource_path(relative):
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, relative)
-    return os.path.join(relative)
 
 
 if __name__ == '__main__':
@@ -89,16 +82,12 @@ if __name__ == '__main__':
     fps_clock = pygame.time.Clock()
     display_surf = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Asteroids')
-    # TODO: options dict with functions
+    options = {'Play game': gameplay.playgame,
+               'High Scores': menus.high_scores,
+               'Exit': terminate}
 
     while True:
-        # TODO pass options from here
-        choice = menus.main_menu(display_surf, fps_clock)
-        if choice == 0:
-            score = gameplay.playgame(display_surf, fps_clock)
-            # TODO move score into gameplay loop
+        choice = menus.main_menu(display_surf, fps_clock, list(options.keys()))
+        score = options[choice](display_surf, fps_clock)
+        if score:
             menus.high_scores(display_surf, fps_clock, score)
-        elif choice == 1:
-            menus.high_scores(display_surf, fps_clock)
-        elif choice == 2:
-            terminate()

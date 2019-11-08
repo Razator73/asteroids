@@ -16,7 +16,7 @@ if not os.path.exists(scores_file):
         csv.writer(file_obj).writerows(scores)
 
 
-def main_menu(surf, clock):
+def main_menu(surf, clock, options):
 
     choice = 0
 
@@ -25,7 +25,6 @@ def main_menu(surf, clock):
         surf.fill(rungame.BGCOLOR)
         title_height = 140
         rungame.draw_text(surf, 'ASTEROIDS', 54, int(rungame.WINDOWWIDTH / 3), title_height)
-        options = ['Play Game', 'High Scores', 'Exit']
         option_height = title_height + 70
         for option in options:
             rungame.draw_text(surf, option, 24, int(rungame.WINDOWWIDTH / 3), option_height)
@@ -46,7 +45,7 @@ def main_menu(surf, clock):
                 elif event.key in (pl.K_s, pl.K_DOWN):
                     choice = (choice + 1) % len(options)
                 elif event.key == pl.K_RETURN:
-                    return choice
+                    return options[choice]
 
         clock.tick(rungame.FPS)
 
@@ -119,10 +118,9 @@ if __name__ == '__main__':
     fps_clock = pygame.time.Clock()
     display_surf = pygame.display.set_mode((rungame.WINDOWWIDTH, rungame.WINDOWHEIGHT))
     pygame.display.set_caption('Asteroids')
+    menu_options = {'High Scores': high_scores,
+                    'Exit': rungame.terminate}
 
     while True:
-        select = main_menu(display_surf, fps_clock)
-        if select == 1:
-            high_scores(display_surf, fps_clock, 81)
-        elif select == 2:
-            rungame.terminate()
+        select = main_menu(display_surf, fps_clock, list(menu_options.keys()))
+        score = menu_options[select](display_surf, fps_clock)
