@@ -160,7 +160,7 @@ class Player:
         self.powerups = {'spread-shot':   {'active': False, 'life': 0},  # Spreadshot, time limit
                          'rapid-fire':    {'active': False, 'life': 0},  # Rapid Fire, time limit
                          'speed-up':      {'active': False, 'life': 0},  # Speed up, time limit
-                         'shield':        {'active': True, 'life': 0},  # Shield, till hit
+                         'shield':        {'active': False, 'life': 0},  # Shield, till hit
                          'piercing-shot': {'active': False, 'life': 0}}  # Piercing Shot, time limit
         self.sub_players = []
         self.sub = sub
