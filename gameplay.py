@@ -397,7 +397,7 @@ def circle_polygon_collide(center, radius, polygon_shape):
 def playgame(game_surf, clock):
     score = 0
     acceleration = 0  # can be 1 to increase 0 stays the same and -1 slow down
-    rotate = 0  # similar to acceleration for values, 1 is counter-clockwise, -1 is clockwise, 0 is none
+    rotate = 0.0  # similar to acceleration for values, 1 is counter-clockwise, -1 is clockwise, 0 is none
     open_fire = False  # weapon firing or not
     bullet_counter = rungame.FIRERATE  # makes sure bullets don't fire too quickly, instant start could be abused
     bullets = []
@@ -442,7 +442,7 @@ def playgame(game_surf, clock):
                 elif event.key in (pl.K_UP, pl.K_w, pl.K_DOWN, pl.K_s):
                     acceleration = 0
                 elif event.key in (pl.K_RIGHT, pl.K_d, pl.K_LEFT, pl.K_a):
-                    rotate = 0
+                    rotate = 0.0
                 elif event.key == pl.K_SPACE:
                     open_fire = False
 

@@ -50,17 +50,24 @@ def main_menu(surf, clock, options):
         clock.tick(rungame.FPS)
 
 
+def draw_score_text(surf, score_name, score_num, height):
+    score_text = '{}{}{}'.format(score_name,
+                                 '.' * (50 - len(score_name) - len(score_num)),
+                                 score_num)
+    rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), height, font='courier')
+
+
 def high_scores(surf, clock, new_score=None):
-    with open(scores_file) as file_obj:
-        scores = list(csv.reader(file_obj))
+    with open(scores_file) as f:
+        scores_list = list(csv.reader(f))
     textinput = pygame_textinput.TextInput(font_family='courier', text_color=rungame.WHITE,
                                            cursor_color=rungame.WHITE, font_size=24)
     title_height = 60
-    if new_score and new_score > int(scores[-1][-1]):
-        for i in range(len(scores)):
-            if new_score > int(scores[i][1]):
-                scores.insert(i, ['', str(new_score)])
-                scores.pop(-1)
+    if new_score and new_score > int(scores_list[-1][-1]):
+        for i in range(len(scores_list)):
+            if new_score > int(scores_list[i][1]):
+                scores_list.insert(i, ['', str(new_score)])
+                scores_list.pop(-1)
                 break
 
         while True:
@@ -68,20 +75,14 @@ def high_scores(surf, clock, new_score=None):
             rungame.draw_text(surf, 'HIGH SCORES', 54, int(rungame.WINDOWWIDTH / 3), title_height)
             score_height = title_height + 110
             events = pygame.event.get()
-            for i in range(len(scores)):
-                if scores[i][0] == '':
+            for i in range(len(scores_list)):
+                if scores_list[i][0] == '':
                     textinput.update(events)
                     rungame.draw_text(surf, 'NEW ---->', 24, 10, score_height - 7)
-                    score_text = '{}{}{}'.format(textinput.get_text(),
-                                                 '.' * (50 - len(textinput.get_text()) - len(str(new_score))),
-                                                 scores[i][1])
-                    rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, font='courier')
+                    draw_score_text(surf, textinput.get_text(), scores_list[i][1], score_height)
                     surf.blit(textinput.get_surface(), (rungame.WINDOWWIDTH / 6, score_height))
                 else:
-                    score_text = '{}{}{}'.format(scores[i][0],
-                                                 '.' * (50 - len(scores[i][0]) - len(scores[i][1])),
-                                                 scores[i][1])
-                    rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, font='courier')
+                    draw_score_text(surf, scores_list[i][0], scores_list[i][1], score_height)
                 score_height += 50
             pygame.display.update()
 
@@ -91,18 +92,15 @@ def high_scores(surf, clock, new_score=None):
                 exit()
             clock.tick(rungame.FPS)
 
-        scores[scores.index(['', str(new_score)])][0] = textinput.get_text()
-        with open(scores_file, 'w', newline='') as file_obj:
-            csv.writer(file_obj).writerows(scores)
+        scores_list[scores_list.index(['', str(new_score)])][0] = textinput.get_text()
+        with open(scores_file, 'w', newline='') as f:
+            csv.writer(f).writerows(scores_list)
 
     surf.fill(rungame.BGCOLOR)
     rungame.draw_text(surf, 'HIGH SCORES', 54, int(rungame.WINDOWWIDTH / 3), title_height)
     score_height = title_height + 110
-    for i in range(len(scores)):
-        score_text = '{}{}{}'.format(scores[i][0],
-                                     '.' * (50 - len(scores[i][0]) - len(scores[i][1])),
-                                     scores[i][1])
-        rungame.draw_text(surf, score_text, 24, int(rungame.WINDOWWIDTH / 6), score_height, font='courier')
+    for i in range(len(scores_list)):
+        draw_score_text(surf, scores_list[i][0], scores_list[i][1], score_height)
         score_height += 50
     rungame.draw_text(surf, 'Press any key to go back to the main menu', 24,
                       int(rungame.WINDOWWIDTH / 4), score_height + 75)
