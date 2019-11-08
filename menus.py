@@ -49,8 +49,6 @@ def main_menu(surf, clock, options):
 
         clock.tick(rungame.FPS)
 
-    # TODO: add selecting the options with mouse cursor
-
 
 def high_scores(surf, clock, new_score=None):
     with open(scores_file) as file_obj:

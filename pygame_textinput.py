@@ -72,7 +72,7 @@ class TextInput:
                 if not event.key in self.keyrepeat_counters:
                     self.keyrepeat_counters[event.key] = [0, event.unicode]
 
-                if event.key == pl.K_BACKSPACE: # FIXME: Delete at beginning of line?
+                if event.key == pl.K_BACKSPACE:
                     self.input_string = self.input_string[:max(self.cursor_position - 1, 0)] + \
                                         self.input_string[self.cursor_position:]
 

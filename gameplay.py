@@ -154,7 +154,7 @@ class Player:
         self.powerups = {'spread-shot':   {'active': False, 'life': 0},  # Spreadshot, time limit
                          'rapid-fire':    {'active': False, 'life': 0},  # Rapid Fire, time limit
                          'speed-up':      {'active': False, 'life': 0},  # Speed up, time limit
-                         'shield':        {'active': False, 'life': 0},  # Shield, till hit
+                         'shield':        {'active': True, 'life': 0},  # Shield, till hit
                          'piercing-shot': {'active': False, 'life': 0}}  # Piercing Shot, time limit
         self.sub_players = []
         self.sub = sub
@@ -370,6 +370,30 @@ def pause_game(surf):
     rungame.wait_for_player()
 
 
+def circle_point_collide(center, radius, point):
+    if math.hypot(center[0] - point[0], center[1] - point[1]) < radius:
+        return True
+    return False
+
+
+def circle_polygon_collide(center, radius, polygon_shape):
+    for i in range(len(polygon_shape) - 1):
+        point1 = polygon_shape[i]
+        point2 = polygon_shape[i + 1]
+        if circle_point_collide(center, radius, point1) or circle_point_collide(center, radius, point2):
+            return True
+        a = (point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2
+        b = 2 * ((point1[0] - point2[0]) * (point2[0] - center[0]) + (point1[1] - point2[1]) * (
+                    point2[1] - center[1]))
+        c = (point2[0] - center[0]) ** 2 + (point2[1] - center[1]) ** 2 - radius ** 2
+        if b ** 2 - 4 * a * c < 0:  # no need to find solutions if they are complex
+            return False
+        solutions = [(-b + math.sqrt(b ** 2 - 4 * a * c)) / (2 * a), (-b - math.sqrt(b ** 2 - 4 * a * c)) / (2 * a)]
+        if (0 <= solutions[0] <= 1) or (0 <= solutions[1] <= 1):  # check real solutions to see if one is in [0, 1]
+            return True
+    return True
+
+
 def playgame(game_surf, clock):
     score = 0
     acceleration = 0  # can be 1 to increase 0 stays the same and -1 slow down
@@ -473,7 +497,7 @@ def playgame(game_surf, clock):
                 if remove_a:
                     asteroids.remove(a)
                     score += 6 - round(a.radius / 10)
-                    if random.uniform(0, 1) >= .50:  # TODO lower power up drop rate in production (0.95)
+                    if random.uniform(0, 1) >= .95:
                         powerups.append(Powerup(a.center, random.choice(list(powerup_dict.keys()))))
                     if a.radius > rungame.ASTEROIDMINSIZE * 2:
                         asteroids += add_asteroid(a)
@@ -498,11 +522,16 @@ def playgame(game_surf, clock):
         pygame.display.update()
 
         # check for player asteroid collisions
-        # TODO: use force field for collision if active
-        for a in asteroids:
-            if math.hypot(ship.center[0] - a.center[0],
-                          ship.center[1] - a.center[1]) < rungame.PLAYERSIZE + a.radius * 1.7:
-                if polygon_collide(a.shape(), ship.shape()):
+        for a in asteroids[:]:
+            check_proximity = math.hypot(ship.center[0] - a.center[0],
+                                         ship.center[1] - a.center[1]) < rungame.PLAYERSIZE + a.radius * 1.7
+            if check_proximity:
+                check_shield_collision = (ship.powerups['shield']['active'] and
+                                          circle_polygon_collide(ship.center, rungame.PLAYERSIZE + 4, a.shape()))
+                if check_shield_collision:
+                    asteroids.remove(a)
+                    ship.powerups['shield']['active'] = False
+                elif polygon_collide(a.shape(), ship.shape()) and not ship.powerups['shield']['active']:
                     gameover(game_surf)
                     return score
         # player collision with a power up
