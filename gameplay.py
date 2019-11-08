@@ -230,19 +230,28 @@ class Player:
             for sub in sub_players:
                 sub.draw(surf)
 
-            # TODO: draw active powerups
             if self.powerups['shield']['active']:
                 pygame.draw.circle(surf, rungame.WHITE, (round(self.center[0]), round(self.center[1])),
                                    rungame.PLAYERSIZE + 4, 2)
+            active_powers = {n: p for n, p in self.powerups.items() if n != 'shield' and p['active']}
+            if active_powers:
+                pygame.draw.rect(surf, rungame.WHITE, pygame.Rect(0, rungame.WINDOWHEIGHT-60, 150, 60), 0)
+                rungame.draw_text(surf, 'Active Powerups', 14, 5, rungame.WINDOWHEIGHT - 55, text_color=rungame.BLACK)
+                x = 5
+                for active_power, info in active_powers.items():
+                    Powerup((x, rungame.WINDOWHEIGHT - 35),
+                            active_power,
+                            info['life']).draw(surf, powerup_dict[active_power]['life'], 'black')
+                    x += 35
 
             self.sub_players = sub_players
 
 
 class Powerup:
-    def __init__(self, location, type_code):
+    def __init__(self, location, type_code, life=0):
         self.location = location
         self.outline = pygame.Rect(location[0], location[1], 30, 30)
-        self.life = 0
+        self.life = life
         self.shape = ((location[0], location[1]),
                       (location[0] + 30, location[1]),
                       (location[0] + 30, location[1] + 30),
@@ -250,9 +259,12 @@ class Powerup:
         self.type_code = type_code
         self.label = powerup_dict[type_code]['label']
 
-    def draw(self, surf):
-        color_fade = max(self.life - rungame.POWERUPLIFE + rungame.FPS * 2, 0)
-        powerup_color = (int(abs(255 * math.cos(4 * math.pi / (rungame.FPS * 2) * color_fade))),) * 3
+    def draw(self, surf, lifespan=rungame.POWERUPLIFE, color='white'):
+        color_fade = max(self.life - lifespan + rungame.FPS * 2, 0)
+        if color == 'white':
+            powerup_color = (int(abs(255 * math.cos(4 * math.pi / (rungame.FPS * 2) * color_fade))),) * 3
+        else:
+            powerup_color = (int(abs(255 * math.sin(4 * math.pi / (rungame.FPS * 2) * color_fade))),) * 3
         pygame.draw.rect(surf, powerup_color, self.outline, 2)
         rungame.draw_text(surf, self.label, 16, self.location[0] + 5, self.location[1] + 5,
                           text_color=powerup_color)
@@ -363,7 +375,7 @@ def playgame(game_surf, clock):
     acceleration = 0  # can be 1 to increase 0 stays the same and -1 slow down
     rotate = 0  # similar to acceleration for values, 1 is counter-clockwise, -1 is clockwise, 0 is none
     open_fire = False  # weapon firing or not
-    bulletCounter = rungame.FIRERATE  # makes sure bullets don't fire too quickly, instant start could be abused
+    bullet_counter = rungame.FIRERATE  # makes sure bullets don't fire too quickly, instant start could be abused
     bullets = []
     ship = Player([rungame.WINDOWWIDTH / 2, rungame.WINDOWHEIGHT / 2])
     powerups = []
@@ -396,7 +408,7 @@ def playgame(game_surf, clock):
                 elif event.key in (pl.K_RIGHT, pl.K_d):
                     rotate = rungame.ROTATESPEED * speed_up_percent
                 elif event.key in (pl.K_LEFT, pl.K_a):
-                    rotate = -rungame.ROTATESPEED * speed_up_percent
+                    rotate = -1 * rungame.ROTATESPEED * speed_up_percent
                 elif event.key == pl.K_SPACE:
                     open_fire = True
 
@@ -415,10 +427,10 @@ def playgame(game_surf, clock):
         ship.accelerate(acceleration)
 
         # handle the firing of the ship's weapon
-        bulletCounter += 1
+        bullet_counter += 1
         add_bullet = (open_fire and
-                      (bulletCounter >= rungame.FIRERATE or
-                       (bulletCounter >= int(rungame.FIRERATE / 2) and ship.powerups['rapid-fire']['active'])))
+                      (bullet_counter >= rungame.FIRERATE or
+                       (bullet_counter >= int(rungame.FIRERATE / 2) and ship.powerups['rapid-fire']['active'])))
         if add_bullet:
             bullets.append(Bullet(ship.shape(), ship.direction, ship.velocity))
             if ship.powerups['spread-shot']['active']:
@@ -426,7 +438,7 @@ def playgame(game_surf, clock):
                                       ship.direction + math.radians(rungame.SPREADANGLE), ship.velocity))
                 bullets.append(Bullet(ship.shape(),
                                       ship.direction - math.radians(rungame.SPREADANGLE), ship.velocity))
-            bulletCounter = 0
+            bullet_counter = 0
 
         # add new asteroids every so often
         asteroidcounter += 1
@@ -461,7 +473,7 @@ def playgame(game_surf, clock):
                 if remove_a:
                     asteroids.remove(a)
                     score += 6 - round(a.radius / 10)
-                    if random.uniform(0, 1) >= .50:  # TODO lower power up drop rate in production
+                    if random.uniform(0, 1) >= .50:  # TODO lower power up drop rate in production (0.95)
                         powerups.append(Powerup(a.center, random.choice(list(powerup_dict.keys()))))
                     if a.radius > rungame.ASTEROIDMINSIZE * 2:
                         asteroids += add_asteroid(a)
@@ -470,16 +482,17 @@ def playgame(game_surf, clock):
 
         # draw all objects onto the surface
         game_surf.fill(rungame.BGCOLOR)
-        ship.draw(game_surf)
         for obj in asteroids + bullets + powerups:
             obj.draw(game_surf)
+        ship.draw(game_surf)
 
         # add 1 point for each second survived
         scorecounter += 1
         if scorecounter >= 30:
             score += 1
             scorecounter = 0
-        rungame.draw_text(game_surf, 'Score: {}'.format(score), 16, 5, 5)
+        pygame.draw.rect(game_surf, rungame.WHITE, pygame.Rect(0, 0, 85, 25), 0)
+        rungame.draw_text(game_surf, 'Score: {}'.format(score), 16, 0, 0, text_color=rungame.BLACK)
 
         # show the new screen
         pygame.display.update()
