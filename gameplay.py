@@ -251,7 +251,7 @@ class Player:
 
 
 class Powerup:
-    def __init__(self, location, type_code, life=0):
+    def __init__(self, location, type_code, life=0, sub=False):
         self.location = location
         self.outline = pygame.Rect(location[0], location[1], 30, 30)
         self.life = life
@@ -261,6 +261,7 @@ class Powerup:
                       (location[0], location[1] + 30))
         self.type_code = type_code
         self.label = powerup_dict[type_code]['label']
+        self.sub = sub
 
     def draw(self, surf, lifespan=rungame.POWERUPLIFE, color='white'):
         color_fade = max(self.life - lifespan + rungame.FPS * 2, 0)
@@ -271,8 +272,19 @@ class Powerup:
         pygame.draw.rect(surf, powerup_color, self.outline, 2)
         rungame.draw_text(surf, self.label, 16, self.location[0] + 5, self.location[1] + 5,
                           text_color=powerup_color)
-        # TODO: add screen wrapping logic
-    
+
+        sub_powerups = []
+        if not self.sub:
+            if self.location[0] > rungame.WINDOWWIDTH - 30:
+                sub_powerups.append(Powerup([self.location[0] - rungame.WINDOWWIDTH, self.location[1]],
+                                            self.type_code, life=self.life, sub=True))
+            if self.location[1] > rungame.WINDOWHEIGHT - 30:
+                sub_powerups.append(Powerup([self.location[0], self.location[1] - rungame.WINDOWHEIGHT],
+                                            self.type_code, life=self.life, sub=True))
+        for p_up in sub_powerups:
+            p_up.draw(surf)
+        # TODO collide with subs
+
     
 def polygon_collide(shape1, shape2):
     poly1 = get_polygon(shape1)
